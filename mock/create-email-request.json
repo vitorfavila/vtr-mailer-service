@@ -1,0 +1,47 @@
+{
+    "template_id": "booking_flight_voucher",
+    "delivery_time": "2024-01-01T00:00:01.000Z",
+    "subject": "VTR Mailer Service - Test",
+    "from": "reservas@mg.timetech.com.br",
+    "to": ["vitorfavila@gmail.com", "thanizemartins@gmail.com"],
+    "cc": ["vitorfavila@hotmail.com"],
+    "bcc": ["thanizemartins@hotmail.com"],
+    "context": {
+        "locator": "123-VOUCHER-456",
+        "etkt": "e123456",
+        "passengers": [
+            "ÁVILA/VITOR",
+            "ALVES/THANIZE"
+        ],
+        "journey": [
+            {
+                "iata": "CNF",
+                "airport": "Aeroporto de Confins",
+                "city": "Belo Horizonte",
+                "country": "Brasil"
+            },
+            {
+                "iata": "CGH",
+                "airport": "Aeroporto de Congonhas",
+                "city": "São Paulo",
+                "country": "Brasil"
+            }
+        ],
+        "notes": [
+            {
+                "title": "Informações Úteis",
+                "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            },
+            {
+                "title": "Atendimento",
+                "text": "Horário comercial. (31) 3333-2222 - atendimento@timetech.com.br"
+            }
+        ]
+    },
+    "testmode": true,
+    "dryrun": true,
+    "tags": [
+        "flight",
+        "protocol:123456"
+    ]
+}
