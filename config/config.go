@@ -8,6 +8,7 @@ import (
 type Config struct {
 	// APP
 	appEnvironment string
+	SendMode       string
 
 	// DB
 	// dbUser string
@@ -26,6 +27,7 @@ func Get() *Config {
 	conf := &Config{}
 	// APP
 	flag.StringVar(&conf.appEnvironment, "app_environment", os.Getenv("APP_ENVIRONMENT"), "Application environment")
+	flag.StringVar(&conf.SendMode, "send_mode", os.Getenv("EMAIL_SEND_MODE"), "Test Mode for Email")
 
 	// Mailgun
 	flag.StringVar(&conf.mailgunDomain, "mailgunDomain", os.Getenv("MAILGUN_DOMAIN_NAME"), "Mailgun Domain Name")

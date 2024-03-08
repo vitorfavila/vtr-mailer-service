@@ -6,6 +6,7 @@ import (
 	"example/vtr-mailer-service/application"
 	"example/vtr-mailer-service/structs"
 	"example/vtr-mailer-service/tools"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -43,20 +44,30 @@ func ProcessEmailTransaction(app *application.Application, c *gin.Context) {
 	trans = transaction.UpdateTransactionStatus(trans.Id, transaction.ProcessPending)
 
 	tmplString := app.Template.Templates.Get(trans.TemplateID)
+
+	// TODO - Transformar em método
 	tmplParsed, errParsing := transaction.ParseTemplate(trans.TemplateID, tmplString)
 	if errParsing != nil {
+		transaction.UpdateTransactionStatus(trans.Id, transaction.FailOnProcess)
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 	tmpl, errTmpl := transaction.GenerateTemplate(*tmplParsed, trans.Context)
 	if errTmpl != nil {
+		transaction.UpdateTransactionStatus(trans.Id, transaction.FailOnProcess)
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
 	trans = transaction.UpdateTransactionStatus(trans.Id, transaction.ProcessFinished)
 
-	email.SendEmail(app, trans, tmpl)
+	errSend := email.SendEmail(app, trans, tmpl)
+	if errSend != nil {
+		fmt.Println(errSend.Error())
+		transaction.UpdateTransactionStatus(trans.Id, transaction.FailOnSend)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
 	trans = transaction.UpdateTransactionStatus(trans.Id, transaction.Sent)
 
 	c.IndentedJSON(http.StatusOK, trans)

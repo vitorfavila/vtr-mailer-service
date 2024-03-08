@@ -7,3 +7,13 @@ type Transaction struct {
 	Status TransactionStatus `json:"status" db:"status"`
 	TransactionCreateRequest
 }
+
+type EmailData struct {
+	To       []string
+	Cc       []string
+	Bcc      []string
+	From     string
+	Subject  string
+	HtmlBody string
+	SendMode string
+}
