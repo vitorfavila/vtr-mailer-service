@@ -1,16 +1,13 @@
 package controllers
 
 import (
-	"bytes"
+	"example/vtr-mailer-service/actions/email"
 	"example/vtr-mailer-service/actions/transaction"
 	"example/vtr-mailer-service/application"
 	"example/vtr-mailer-service/structs"
 	"example/vtr-mailer-service/tools"
-	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,6 +34,36 @@ func CreateEmailTransaction(app *application.Application, c *gin.Context) {
 
 func ProcessEmailTransaction(app *application.Application, c *gin.Context) {
 	transactionId, _ := strconv.ParseInt(c.Param("transactionId"), 10, 64)
+	trans, err := transaction.GetTransaction(transactionId)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	trans = transaction.UpdateTransactionStatus(trans.Id, transaction.ProcessPending)
+
+	tmplString := app.Template.Templates.Get(trans.TemplateID)
+	tmplParsed, errParsing := transaction.ParseTemplate(trans.TemplateID, tmplString)
+	if errParsing != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	tmpl, errTmpl := transaction.GenerateTemplate(*tmplParsed, trans.Context)
+	if errTmpl != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	trans = transaction.UpdateTransactionStatus(trans.Id, transaction.ProcessFinished)
+
+	email.SendEmail(app, trans, tmpl)
+	trans = transaction.UpdateTransactionStatus(trans.Id, transaction.Sent)
+
+	c.IndentedJSON(http.StatusOK, trans)
+}
+
+func ViewEmail(app *application.Application, c *gin.Context) {
+	transactionId, _ := strconv.ParseInt(c.Param("transactionId"), 10, 64)
 
 	trans, err := transaction.GetTransaction(transactionId)
 	if err != nil {
@@ -45,27 +72,29 @@ func ProcessEmailTransaction(app *application.Application, c *gin.Context) {
 	}
 
 	tmplString := app.Template.Templates.Get(trans.TemplateID)
-	tmpl, err := template.New(trans.TemplateID).Parse(tmplString)
-	if err != nil {
-		fmt.Println("1 " + err.Error())
+	tmplParsed, errParsing := transaction.ParseTemplate(trans.TemplateID, tmplString)
+	if errParsing != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	var htmlBuffer bytes.Buffer
-	err = tmpl.Execute(&htmlBuffer, trans.Context)
-	if err != nil {
-		fmt.Println("2 " + err.Error())
+	tmpl, errTmpl := transaction.GenerateTemplate(*tmplParsed, trans.Context)
+	if errTmpl != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Println(htmlBuffer.String())
+	c.Data(200, "text/html; charset=utf-8", []byte(tmpl))
+}
 
-	trans.Status = transaction.ProcessPending
-	time.Sleep(time.Second * 2)
-	trans.Status = transaction.ProcessFinished
-	transaction.UpdateTransaction(trans)
+func GetTransaction(app *application.Application, c *gin.Context) {
+	transactionId, _ := strconv.ParseInt(c.Param("transactionId"), 10, 64)
+
+	trans, err := transaction.GetTransaction(transactionId)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
 
 	c.IndentedJSON(http.StatusOK, trans)
 }

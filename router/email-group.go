@@ -15,4 +15,12 @@ func SetupEmailTransactionGroup(app *application.Application, router *gin.Router
 	router.POST("/process/:transactionId", func(c *gin.Context) {
 		controllers.ProcessEmailTransaction(app, c)
 	})
+
+	router.GET("/view/:transactionId", func(c *gin.Context) {
+		controllers.ViewEmail(app, c)
+	})
+
+	router.GET("/get/:transactionId", func(c *gin.Context) {
+		controllers.GetTransaction(app, c)
+	})
 }
