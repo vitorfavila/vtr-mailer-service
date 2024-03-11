@@ -22,6 +22,10 @@ func SetupRouter(app *application.Application) *gin.Engine {
 		SetupEmailTransactionGroup(app, emailTransactionGroup)
 	}
 
+	router.GET("/health", func(c *gin.Context) {
+		c.Data(200, "text/plain", []byte("OK"))
+	})
+
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	})

@@ -15,6 +15,8 @@ Database/SQL: sqlx - https://github.com/jmoiron/sqlx
 Error Handling: errors = https://github.com/pkg/errors
 
 ### PGX/SQLX Example
+Guide: https://medium.com/avitotech/how-to-work-with-postgres-in-go-bad2dabd13e4
+
 
 ```go
 package main
