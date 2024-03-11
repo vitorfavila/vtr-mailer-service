@@ -4,7 +4,7 @@ import (
 	"example/vtr-mailer-service/actions/email/providers/mailgun"
 	"example/vtr-mailer-service/application"
 	"example/vtr-mailer-service/structs"
-	"fmt"
+	"example/vtr-mailer-service/tools"
 )
 
 func SendEmail(app *application.Application, transaction structs.Transaction, htmlBody string) error {
@@ -21,9 +21,16 @@ func SendEmail(app *application.Application, transaction structs.Transaction, ht
 		SendMode: app.Cfg.SendMode,
 	}
 
-	MailgunResponse, err := mailgun.SendEmail(domain, username, password, EmailData, htmlBody)
+	// TODO: Multiple email providers
+	var mailgunConfig = mailgun.ServiceConfig{
+		Domain:   domain,
+		Username: username,
+		Password: password,
+	}
 
-	fmt.Println(MailgunResponse)
+	mailgunResponse, err := mailgun.Dispatch(mailgunConfig, EmailData, htmlBody)
+
+	tools.PrintStruct(mailgunResponse)
 
 	return err
 }

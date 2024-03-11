@@ -2,79 +2,80 @@ package mailgun
 
 import (
 	"bytes"
+	"encoding/json"
 	"example/vtr-mailer-service/structs"
-	"fmt"
+	"example/vtr-mailer-service/tools"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"strings"
+	"time"
 )
 
-func SendEmail(domain string, username string, password string, emailData structs.EmailData, htmlBody string) (MailgunResponse string, Error error) {
-	var err error
+func Dispatch(mailgunConfig ServiceConfig, emailData structs.EmailData, htmlBody string) (MailgunResponse, error) {
+	var data bytes.Buffer
+	writer := multipart.NewWriter(&data)
 
-	domainName := domain
-	reqUrl := "https://api.mailgun.net/v3/" + domainName + "/messages"
-
-	data := &bytes.Buffer{}
-	writer := multipart.NewWriter(data)
-	fromFw, _ := writer.CreateFormField("from")
-	_, err = io.Copy(fromFw, strings.NewReader(emailData.From))
-	if err != nil {
-		return "", err
-	}
-	toFw, _ := writer.CreateFormField("to")
-	_, err = io.Copy(toFw, strings.NewReader(parseMultipleEmailsToString(emailData.To)))
-	if err != nil {
-		return "", err
-	}
-	subjectFw, _ := writer.CreateFormField("subject")
-	_, err = io.Copy(subjectFw, strings.NewReader(emailData.Subject))
-	if err != nil {
-		return "", err
-	}
-	htmlFw, _ := writer.CreateFormField("html")
-	_, err = io.Copy(htmlFw, strings.NewReader(htmlBody))
-	if err != nil {
-		return "", err
-	}
-	writer.Close()
-
-	payload := bytes.NewReader(data.Bytes())
-	req, err := http.NewRequest("POST", reqUrl, payload)
-	if err != nil {
-		return "", err
-	}
-	req.SetBasicAuth(username, password)
-	req.Header.Add("Content-Type", writer.FormDataContentType())
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return "", err
+	fields := map[string]string{
+		"from":    emailData.From,
+		"to":      strings.Join(emailData.To, ", "),
+		"cc":      strings.Join(emailData.Cc, ", "),
+		"bcc":     strings.Join(emailData.Bcc, ", "),
+		"subject": emailData.Subject,
+		"html":    htmlBody,
 	}
 
-	// DEBUG
-	fmt.Println(res.StatusCode)
-	// fmt.Println(string(body))
+	for field, value := range fields {
+		if err := tools.AddFormField(writer, field, value); err != nil {
+			return MailgunResponse{}, err
+		}
+	}
 
-	return string(body), nil
+	if err := writer.Close(); err != nil {
+		return MailgunResponse{}, err
+	}
+
+	req, err := createMailgunRequest(&data, writer, mailgunConfig)
+	if err != nil {
+		return MailgunResponse{}, err
+	}
+
+	return dispatchMailgunRequest(req)
 }
 
-func parseMultipleEmailsToString(emails []string) string {
-	emailString := ""
+func createMailgunRequest(data *bytes.Buffer, writer *multipart.Writer, mailgunConfig ServiceConfig) (*http.Request, error) {
+	reqUrl := "https://api.mailgun.net/v3/" + mailgunConfig.Domain + "/messages"
 
-	for _, email := range emails {
-		if len(emailString) == 0 {
-			emailString = email
-			continue
-		}
+	req, Error := http.NewRequest("POST", reqUrl, bytes.NewReader(data.Bytes()))
+	if Error != nil {
+		return nil, Error
+	}
+	req.SetBasicAuth(mailgunConfig.Username, mailgunConfig.Password)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
 
-		emailString = emailString + ", " + email
+	return req, nil
+}
+
+func dispatchMailgunRequest(req *http.Request) (DispatchMailgunResponse MailgunResponse, Error error) {
+	client := &http.Client{
+		Timeout: 10 * time.Second, // Exemplo de timeout
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return MailgunResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return MailgunResponse{}, err
 	}
 
-	return emailString
+	var mailResponse MailgunResponse
+	if err := json.Unmarshal(body, &mailResponse); err != nil {
+		return MailgunResponse{}, err
+	}
+	mailResponse.StatusCode = resp.StatusCode
+
+	return mailResponse, nil
 }

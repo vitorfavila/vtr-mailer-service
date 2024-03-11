@@ -53,8 +53,7 @@ func UpdateTransaction(transaction structs.Transaction) error {
 func UpdateTransactionStatus(transactionId int64, status structs.TransactionStatus) structs.Transaction {
 	trans, err := GetTransaction(transactionId)
 	if err != nil {
-		// TODO
-		// LOGAR ERRO
+		// TODO - Logar erro
 	}
 
 	trans.Status = status

@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  app:
+    target: development
+    volumes:
+      - .:/app
+      - go-build:/go/pkg/mod
+      - go-cache:/root/.cache/go-build
+    env_file: 
+      - .env
+  db:
+    ports:
+      - "5432:5432"
+
+volumes:
+  go-build:
+  go-cache:

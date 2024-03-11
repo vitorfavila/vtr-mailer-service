@@ -24,3 +24,18 @@ func GenerateTemplate(tmpl template.Template, context structs.Context) (string, 
 
 	return htmlBuffer.String(), nil
 }
+
+func ParseGenerateTemplate(templateId string, htmlTemplate string, context structs.Context) (string, error) {
+	var err error
+	tmplParsed, err := ParseTemplate(templateId, htmlTemplate)
+	if err != nil {
+		return "", err
+	}
+
+	tmpl, err := GenerateTemplate(*tmplParsed, context)
+	if err != nil {
+		return "", err
+	}
+
+	return tmpl, nil
+}

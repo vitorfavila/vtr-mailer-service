@@ -16,8 +16,6 @@ import (
 func CreateEmailTransaction(app *application.Application, c *gin.Context) {
 	var newTransactionCreateRequest structs.TransactionCreateRequest
 
-	// Call BindJSON to bind the received JSON to
-	// newAlbum.
 	if err := c.BindJSON(&newTransactionCreateRequest); err != nil {
 		return
 	}
@@ -28,7 +26,6 @@ func CreateEmailTransaction(app *application.Application, c *gin.Context) {
 		TransactionCreateRequest: newTransactionCreateRequest,
 	}
 
-	// Add the new album to the slice.
 	transaction.AddTransaction(newTransaction)
 	c.IndentedJSON(http.StatusCreated, newTransaction)
 }
@@ -44,15 +41,7 @@ func ProcessEmailTransaction(app *application.Application, c *gin.Context) {
 	trans = transaction.UpdateTransactionStatus(trans.Id, transaction.ProcessPending)
 
 	tmplString := app.Template.Templates.Get(trans.TemplateID)
-
-	// TODO - Transformar em método
-	tmplParsed, errParsing := transaction.ParseTemplate(trans.TemplateID, tmplString)
-	if errParsing != nil {
-		transaction.UpdateTransactionStatus(trans.Id, transaction.FailOnProcess)
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	tmpl, errTmpl := transaction.GenerateTemplate(*tmplParsed, trans.Context)
+	tmpl, errTmpl := transaction.ParseGenerateTemplate(trans.TemplateID, tmplString, trans.Context)
 	if errTmpl != nil {
 		transaction.UpdateTransactionStatus(trans.Id, transaction.FailOnProcess)
 		c.Status(http.StatusInternalServerError)
@@ -83,14 +72,9 @@ func ViewEmail(app *application.Application, c *gin.Context) {
 	}
 
 	tmplString := app.Template.Templates.Get(trans.TemplateID)
-	tmplParsed, errParsing := transaction.ParseTemplate(trans.TemplateID, tmplString)
-	if errParsing != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-
-	tmpl, errTmpl := transaction.GenerateTemplate(*tmplParsed, trans.Context)
+	tmpl, errTmpl := transaction.ParseGenerateTemplate(trans.TemplateID, tmplString, trans.Context)
 	if errTmpl != nil {
+		transaction.UpdateTransactionStatus(trans.Id, transaction.FailOnProcess)
 		c.Status(http.StatusInternalServerError)
 		return
 	}
