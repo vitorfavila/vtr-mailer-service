@@ -1,7 +1,7 @@
 ## Estágio de desenvolvimento
 
 # Imagem de base
-FROM --platform=linux/amd64 golang:1.18-alpine as development
+FROM --platform=linux/amd64 golang:1.22-alpine as development
 
 # Instalar dependências do sistema necessárias
 RUN apk add --no-cache git
@@ -31,7 +31,7 @@ CMD ["air"]
 ## Estágio de build
 
 # Imagem de base
-FROM --platform=linux/amd64 golang:1.18-alpine AS build
+FROM --platform=linux/amd64 golang:1.22-alpine AS build
 
 # Definir diretório de trabalho
 WORKDIR /src

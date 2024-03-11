@@ -1,7 +1,10 @@
 version: '3.8'
 services:
   app:
-    target: development
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
     volumes:
       - .:/app
       - go-build:/go/pkg/mod
