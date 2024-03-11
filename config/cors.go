@@ -8,35 +8,27 @@ import (
 )
 
 func (c *Config) GetCors() gin.HandlerFunc {
-	return cors.New(c.GetCorsOpenConfig())
+	return cors.New(c.GetCorsConfig())
 }
 
 func (c *Config) GetCorsConfig() cors.Config {
 	config := cors.DefaultConfig()
-	config.AddAllowHeaders("ELQ-TKA")
-	config.AllowOrigins = c.GetAllowedOrigins()
 
 	if c.GetEnvironment() == "development" {
 		fmt.Println("DEVELOPMENT CORS")
-		config.AllowOrigins = []string{"*"}
+		config.AllowAllOrigins = true
+		// config.AllowOrigins = []string{"*"}
+	} else {
+		config.AllowOrigins = c.GetAllowedOrigins()
 	}
-
-	return config
-}
-
-func (c *Config) GetCorsOpenConfig() cors.Config {
-	config := cors.DefaultConfig()
-	config.AddAllowHeaders("ELQ-TKA", "Authorization")
-	config.AllowAllOrigins = true
 
 	return config
 }
 
 func (c *Config) GetAllowedOrigins() []string {
 	return []string{
-		"https://elquarto.com",
-		"https://www.elquarto.com",
-		"https://elquarto.com/blog",
-		"https://www.elquarto.com/blog",
+		"https://domain.com",
+		"https://www.domain.com",
+		"https://app.domain.com",
 	}
 }

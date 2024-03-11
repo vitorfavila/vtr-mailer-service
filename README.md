@@ -7,7 +7,25 @@
 ### Production
 `docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
 
+### TODO
+- [ ] Integrate with PostgreSQL
+  - [ ] Configure PGX as database driver
+  - [ ] Configure SQLX
+  - [ ] Integrate a migration solution
+- [ ] Integrate with another Email solution
+- [ ] Webhooks from Email providers
+- [ ] Webhooks to consumers
+- [ ] API Auth
+  - [ ] User
+  - [ ] Authentication
+  - [ ] Authorization
+- [ ] Work with queue
+  - [ ] Queue consumer
+
 ## External Libs
+Framework Web: Gin Gonic - https://github.com/gin-gonic/gin
+CORS: Gin Contrib / Cors - https://github.com/gin-contrib/cors
+DotEnv: GoDotEnv - https://github.com/joho/godotenv
 Logger: Zerolog - https://github.com/rs/zerolog
 Migration: Goose - https://github.com/pressly/goose
 PostgreSQL Driver: pgx - https://github.com/jackc/pgx
