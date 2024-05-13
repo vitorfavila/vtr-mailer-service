@@ -9,8 +9,8 @@
 
 ### TODO
 - [ ] Integrate with PostgreSQL
-  - [ ] Configure PGX as database driver
-  - [ ] Configure SQLX
+  - [x] Configure PGX as database driver
+  - [x] Configure SQLX
   - [ ] Integrate a migration solution
 - [ ] Integrate with another Email solution
 - [ ] Webhooks from Email providers
@@ -30,7 +30,6 @@ Logger: Zerolog - https://github.com/rs/zerolog
 Migration: Goose - https://github.com/pressly/goose
 PostgreSQL Driver: pgx - https://github.com/jackc/pgx
 Database/SQL: sqlx - https://github.com/jmoiron/sqlx
-Error Handling: errors = https://github.com/pkg/errors
 
 ### PGX/SQLX Example
 Guide: https://medium.com/avitotech/how-to-work-with-postgres-in-go-bad2dabd13e4
